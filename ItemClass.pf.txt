@@ -1,0 +1,41 @@
+--------------------------------------------------------------------------------
+--  Table name: ItemClass
+--  Date Written: 03/17/18
+--  Author: Mike Larsen
+--  Purpose: This table will hold item class information that will
+--           be used by various web services.
+--
+--  RUNSQLSTM SRCFILE(mikel/qddlsrc) SRCMBR(itemclass) COMMIT(*NONE)
+--  DFTRDBCOL(mikel)
+--
+--------------------------------------------------------------------------------
+
+Create Table ItemClass (
+
+-- auto generated id field
+
+   Id Numeric (5, 0) Generated always as Identity(
+   start with 1 increment by 1 no minvalue no maxvalue
+   no cycle no order cache 20) implicitly hidden,
+
+   itemClass            Char (2)  not null default ' ',
+   itemClassDescription Char (30) not null default ' ',
+
+   Constraint PK_ID_ItemClass Primary Key("ITEMCLASS"))
+   RcdFmt ItemClassR;
+
+  Label on Table ItemClass
+	 is 'Item Class table';
+
+  Label on Column ItemClass
+  (
+    Id                   Text is 'id',
+    itemClass            Text is 'Item class',
+    itemClassDescription Text is 'Item class description');
+
+Grant Alter, Delete, Index, Insert, References, Select, Update
+on ItemClass to Public With Grant Option;
+
+Grant Delete, Insert, Select, Update
+on ItemClass to Public;
+ 

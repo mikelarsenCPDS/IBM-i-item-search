@@ -1,0 +1,45 @@
+--------------------------------------------------------------------------------
+--  Table name: ItemMaster
+--  Date Written: 03/17/18
+--  Author: Mike Larsen
+--  Purpose: This table will hold item master information that will
+--           be used by various web services.
+--
+--  RUNSQLSTM SRCFILE(mikel/qddlsrc) SRCMBR(itemmaster) COMMIT(*NONE)
+--  DFTRDBCOL(mikel)
+--
+--------------------------------------------------------------------------------
+
+Create Table ItemMaster (
+
+-- auto generated id field
+
+   Id Numeric (5, 0) Generated always as Identity(
+   start with 1 increment by 1 no minvalue no maxvalue
+   no cycle no order cache 20) implicitly hidden,
+
+   itemNumber             Char (20) not null default ' ',
+   itemDescription        Char (30) not null default ' ',
+   unitOfMeasure          Char (3)  not null default ' ',
+   itemClass              Char (2)  not null default ' ',
+
+   Constraint PK_ID_ItemMaster Primary Key("ITEMNUMBER"))
+   RcdFmt ItemMastR;
+
+  Label on Table ItemMaster
+	 is 'Item Master table';
+
+  Label on Column ItemMaster
+  (
+    Id                     Text is 'id',
+    itemNumber             Text is 'Item number',
+    itemDescription        Text is 'Item description',
+    unitOfMeasure          Text is 'Unit of measure',
+    itemClass              Text is 'Item class');
+
+Grant Alter, Delete, Index, Insert, References, Select, Update
+on ItemMaster to Public With Grant Option;
+
+Grant Delete, Insert, Select, Update
+on ItemMaster to Public;
+ 

@@ -1,0 +1,170 @@
+**FREE
+ctl-opt option (*srcstmt : *nodebugio : *nounref) nomain;
+ctl-opt Pgminfo(*pcml: *module: *dclcase);
+ctl-opt debug (*input);
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+//  Program : Rtv_items
+//  Author  : Mike Larsen
+//  Date Written: 03/17/2018
+//  Purpose : This program will be created as a module and service program
+//            then created as a web service to receive information from the
+//            item master table and return it back to the consumer.
+//
+// CRTSRVPGM SRVPGM(MIKEL/rtv_items) MODULE(MIKEL/rtv_items) EXPORT(*ALL)
+//                     SRCFILE(MIKEL/QRPGLESRC)
+//
+//====================================================================*
+//   Date    Programmer  Description                                  *
+//--------------------------------------------------------------------*
+// 03/17/18  M.Larsen    Original code.                               *
+//                                                                    *
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *
+
+// - - - -
+// for the item classes procedure
+
+dcl-ds itemClass_Ds qualified template;
+       ItemClass     char(2);
+       ItemClassDesc char(30);
+end-ds;
+
+// - - - -
+// for the items procedure
+
+dcl-ds itemNumber_Ds qualified template;
+       ItemNumber            char(20);
+       ItemNumberDescription char(30);
+end-ds;
+
+// - - - -
+// for the item details procedure
+
+dcl-ds itemNumberDetails_Ds  qualified template;
+       ItemClassDetail       char(2);
+       ItemNumberDetail      char(20);
+       ItemDescriptionDetail char(30);
+       UnitOfMeasureDetail   char(3);
+end-ds;
+
+// - - - -
+// Retrieve item classes procedure
+
+dcl-proc retrieveItemClasses export;
+
+   dcl-pi *n;
+
+       // this procedure will return all item classes from the item master.
+       // limit it to 50 item classes for this example.
+
+       numberOfItemClasses int(10);
+       itemClasses likeds(itemClass_Ds) dim(50);
+
+   end-pi;
+
+   numberOfItemClasses = 0;
+
+    Exec sql
+      declare itemClassCsr cursor for
+        select distinct a.itemClass, b.itemClassDescription
+          from       itemMaster a
+          inner join itemClass  b
+          on a.itemClass = b.itemClass
+
+          group by a.itemClass, b.itemClassDescription
+          order by a.itemClass, b.itemClassDescription;
+
+    Exec sql
+      open itemClassCsr;
+
+    Exec sql
+      fetch itemClassCsr for 50 rows into :itemClasses;
+
+    Exec sql
+      get diagnostics :numberOfItemClasses = row_count;
+
+    Exec sql
+      close itemClassCsr;
+
+   Return;
+
+ End-proc retrieveItemClasses;
+
+// - - - -
+// Retrieve items procedure
+
+dcl-proc retrieveItems export;
+
+   dcl-pi *n;
+
+       itemClassIn char(2);
+
+       // this procedure will return all items from the item master.  limit
+       // it to 200 items for this example.
+
+       numberOfItems int(10);
+       itemNumbers   likeds(itemNumber_Ds) dim(200);
+
+   end-pi;
+
+   numberOfItems = 0;
+
+    Exec sql
+      declare itemNumberCsr cursor for
+        select itemNumber, itemDescription
+          from itemMaster
+          where itemClass = :itemClassIn
+          order by itemNumber;
+
+    Exec sql
+      open itemNumberCsr;
+
+    Exec sql
+      fetch itemNumberCsr for 200 rows into :itemNumbers;
+
+    Exec sql
+      get diagnostics :numberOfItems = row_count;
+
+    Exec sql
+      close itemNumberCsr;
+
+   Return;
+
+ End-proc retrieveItems;
+
+// - - - -
+// Retrieve item details procedure
+
+dcl-proc retrieveItemDetails export;
+
+   dcl-pi *n;
+
+       itemClassIn  char(2);
+       itemNumberIn char(20);
+
+       // this procedure will item details from the item master based on the
+       // item class/item number sent in.
+
+       itemNumberDetails likeds(itemNumberDetails_Ds);
+
+   end-pi;
+
+    Exec sql
+      declare itemNumberDetailsCsr cursor for
+        select itemClass, itemNumber, itemDescription, unitOfMeasure
+          from itemMaster
+          where itemClass = :itemClassIn and itemNumber = :itemNumberIn;
+
+    Exec sql
+      open itemNumberDetailsCsr;
+
+    Exec sql
+      fetch itemNumberDetailsCsr into :itemNumberDetails;
+
+    Exec sql
+      close itemNumberDetailsCsr;
+
+   Return;
+
+ End-proc retrieveItemDetails;
+
+ //- - - - - - - - - - - - - - - - - 
